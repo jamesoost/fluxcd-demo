@@ -1,0 +1,21 @@
+checks:
+  addAllBuiltIn: true
+  exclude:
+    - required-annotation-email
+    - required-label-owner
+    - dnsconfig-options
+    - no-node-affinity
+    - minimum-three-replicas
+    - non-isolated-pod
+    - dangling-service
+    - dangling-servicemonitor
+    - no-rolling-update-strategy
+    - default-service-account
+    - use-namespace
+    - wildcard-in-rules
+    - sensitive-host-mounts
+    - host-network
+    - host-pid
+    - writable-host-mount
+    - no-liveness-probe
+    - no-readiness-probe
