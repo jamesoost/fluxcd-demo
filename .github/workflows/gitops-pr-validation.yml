@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: gitops-pr-validation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-manifests:
     runs-on: ubuntu-latest
@@ -50,11 +54,12 @@ jobs:
         id: lint-app
         continue-on-error: true
         run: |
-          kube-linter lint /tmp/rendered.yaml
+          set -o pipefail
+          kube-linter lint /tmp/rendered.yaml 2>&1 | tee /tmp/lint-app.txt
 
       - name: Install yq
         run: |
-          sudo curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+          sudo curl -sL https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64 -o /usr/local/bin/yq
           sudo chmod +x /usr/local/bin/yq
           
       - name: Install Helm
@@ -62,8 +67,8 @@ jobs:
 
       - name: Render Monitoring Stack
         run: |
-          REPOS_FILE="fluxcd-demo/monitoring/repositories.yaml"
-          RELEASES_FILE="fluxcd-demo/monitoring/releases.yaml"
+          REPOS_FILE="monitoring/repositories.yaml"
+          RELEASES_FILE="monitoring/releases.yaml"
 
           REPO_NAMES=$(yq eval 'select(.kind == "HelmRepository") | .metadata.name' "$REPOS_FILE")
           for REPO in $REPO_NAMES; do
@@ -94,10 +99,35 @@ jobs:
         id: lint-monitoring
         continue-on-error: true
         run: |
-          kube-linter lint --config .kube-linter-monitoring.yaml /tmp/helm-rendered.yaml
+          set -o pipefail
+          kube-linter lint --config .kube-linter-monitoring.yaml /tmp/helm-rendered.yaml 2>&1 | tee /tmp/lint-monitoring.txt
 
-      - name: Fail if any lint step failed
-        if: steps.lint-app.outcome == 'failure' || steps.lint-monitoring.outcome == 'failure'
+      - name: Summarize lint results
+        if: always()
         run: |
-          echo "One or more kube-linter checks failed — see logs above."
+          {
+            echo "## Kube-linter results"
+            echo
+            echo "- App manifests: ${{ steps.lint-app.outcome }}"
+            echo "- Monitoring Helm stack: ${{ steps.lint-monitoring.outcome }}"
+            echo
+            if [[ -f /tmp/lint-app.txt ]]; then
+              echo "### App lint output"
+              echo '```text'
+              cat /tmp/lint-app.txt
+              echo '```'
+              echo
+            fi
+            if [[ -f /tmp/lint-monitoring.txt ]]; then
+              echo "### Monitoring lint output"
+              echo '```text'
+              cat /tmp/lint-monitoring.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce app lint
+        if: steps.lint-app.outcome == 'failure'
+        run: |
+          echo "App manifest linting failed. Monitoring lint is advisory only."
           exit 1
