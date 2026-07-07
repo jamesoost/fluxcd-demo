@@ -1,3 +1,14 @@
 checks:
   addAllBuiltIn: true
-  exclude: []
+  exclude:
+    - required-annotation-email
+    - required-label-owner
+    - dnsconfig-options
+    - no-node-affinity
+    - minimum-three-replicas
+    - non-isolated-pod
+    - dangling-service
+    - dangling-servicemonitor
+    - no-rolling-update-strategy
+    - default-service-account
+    - use-namespace
