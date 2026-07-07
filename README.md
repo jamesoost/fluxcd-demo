@@ -1,40 +1,76 @@
-# Flux demo
+# FluxCD GitOps Demo
 
-This repository contains a small Flux GitOps setup for a local Kubernetes cluster running on k3s.
+## Project Overview
 
-## What is included
+This project demonstrates a lightweight GitOps platform using FluxCD on a local k3s cluster.
+It deploys a sample application and a monitoring stack (Prometheus, Loki, Grafana) using declarative Kubernetes manifests and Helm releases managed by Flux.
 
-- A simple whoami sample application.
-- Monitoring stack with:
-  - prometheus-community
-  - Loki
-  - Grafana
-- Ingress for Grafana at grafana.localhost using traefik.
-- Declarative secret management using Sealed Secrets.
+## Architecture Diagram
 
-## Repository layout
+```mermaid
+flowchart TD
+    A[GitHub Repo] --> B[Flux Source Controller]
+    B --> C[Flux Kustomize Controller]
+    C --> D[Apps Namespace]
+    C --> E[Monitoring Namespace]
+    D --> F[whoami Deployment + Service]
+    E --> G[HelmRepository + HelmRelease]
+    G --> H[Prometheus]
+    G --> I[Loki]
+    G --> J[Grafana]
+    J --> K[Ingress via Traefik]
+```
 
-- apps/whoami: sample application manifests
-- monitoring: HelmRepository, HelmRelease, and SealedSecret definitions
-- ingress: ingress resource for Grafana
-- kustomization.yaml: top-level Flux entrypoint
+## Repo Structure
 
-## Current status
+- apps/whoami: sample application manifests.
+- monitoring: HelmRepository, HelmRelease, and monitoring resources.
+- ingress: ingress resources (Grafana endpoint).
+- kustomization.yaml: top-level Flux reconciliation entrypoint.
+- namespace.yaml: shared namespace bootstrap.
 
-The repo is configured to reconcile the following resources through Flux/Kustomize:
+## GitOps Workflow
 
-- whoami deployment and service
-- monitoring stack with reduced resource requests for a smaller VM
-- Grafana admin credentials stored as a SealedSecret.
+1. Changes are committed to Git.
+2. Flux pulls repository updates.
+3. Kustomize reconciles core manifests.
+4. Flux Helm controller reconciles Helm releases for monitoring.
+5. Cluster state converges to the desired state defined in this repository.
 
+## Components
 
-## Secret management
+- whoami: simple demo workload.
+- Prometheus stack: metrics collection and alerting components.
+- Loki: log aggregation backend.
+- Grafana: dashboards and visualization.
+- Sealed Secrets: encrypted secret management for GitOps workflows.
 
-Grafana credentials are managed through a SealedSecret in monitoring/grafana-admin-sealed.yaml. The Sealed Secrets controller in the cluster decrypts it into a normal Kubernetes Secret at apply time.
+## CI Pipeline Overview
 
-## CI/CD Validation
+GitHub Actions validates every pull request and push to main:
 
-This repository utilizes a GitHub Action to automatically validate Kubernetes manifests on every push and pull request. The pipeline ensures configuration quality by:
-- Compiling overlays using `kustomize`.
-- Validating structural syntax and schemas against core Kubernetes and FluxCD CRDs using `kubeconform`.
-- Scanning manifests for security vulnerabilities and misconfigurations using `kube-linter`.
+1. Build manifests with kustomize.
+2. Validate schemas with kubeconform (including Flux CRDs).
+3. Lint application manifests with kube-linter (blocking).
+4. Render monitoring Helm charts and lint with kube-linter (advisory).
+
+## Deployment
+
+High-level deployment flow:
+
+1. Bootstrap Flux on the cluster.
+2. Point Flux to this repository.
+3. Apply top-level kustomization.
+4. Verify app, monitoring, and ingress resources reconcile successfully.
+
+## Current Features
+
+- GitOps-based app and monitoring deployment.
+- Monitoring stack tuned for smaller local environments.
+- CI manifest validation with schema and lint checks.
+- Dedicated monitoring lint profile to reduce low-signal chart findings.
+
+## Future Improvements
+
+- Add environment overlays (dev/stage/prod style structure).
+- Add alert routing and dashboard provisioning.
