@@ -25,11 +25,16 @@ The repo is configured to reconcile the following resources through Flux/Kustomi
 
 - whoami deployment and service
 - monitoring stack with reduced resource requests for a smaller VM
-- Grafana admin credentials stored as a SealedSecret rather than plaintext in Git
+- Grafana admin credentials stored as a SealedSecret.
 
 
 ## Secret management
 
 Grafana credentials are managed through a SealedSecret in monitoring/grafana-admin-sealed.yaml. The Sealed Secrets controller in the cluster decrypts it into a normal Kubernetes Secret at apply time.
 
-```
+## CI/CD Validation
+
+This repository utilizes a GitHub Action to automatically validate Kubernetes manifests on every push and pull request. The pipeline ensures configuration quality by:
+- Compiling overlays using `kustomize`.
+- Validating structural syntax and schemas against core Kubernetes and FluxCD CRDs using `kubeconform`.
+- Scanning manifests for security vulnerabilities and misconfigurations using `kube-linter`.
