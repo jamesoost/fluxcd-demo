@@ -70,9 +70,9 @@ jobs:
           REPOS_FILE="monitoring/repositories.yaml"
           RELEASES_FILE="monitoring/releases.yaml"
 
-          REPO_NAMES=$(yq eval 'select(.kind == "HelmRepository") | .metadata.name' "$REPOS_FILE")
+          REPO_NAMES=$(yq eval -N -r 'select(.kind == "HelmRepository") | .metadata.name' "$REPOS_FILE")
           for REPO in $REPO_NAMES; do
-            URL=$(yq eval "select(.metadata.name == \"$REPO\") | .spec.url" "$REPOS_FILE")
+            URL=$(yq eval -N -r "select(.metadata.name == \"$REPO\") | .spec.url" "$REPOS_FILE")
             helm repo add "$REPO" "$URL"
           done
           helm repo update
@@ -80,13 +80,13 @@ jobs:
           rm -f /tmp/helm-rendered.yaml
           touch /tmp/helm-rendered.yaml
 
-          NAMES=$(yq eval 'select(.kind == "HelmRelease") | .metadata.name' "$RELEASES_FILE")
+          NAMES=$(yq eval -N -r 'select(.kind == "HelmRelease") | .metadata.name' "$RELEASES_FILE")
           for NAME in $NAMES; do
-            CHART=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.chart" "$RELEASES_FILE")
-            VERSION=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.version" "$RELEASES_FILE")
-            SOURCE=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.sourceRef.name" "$RELEASES_FILE")
+            CHART=$(yq eval -N -r "select(.metadata.name == \"$NAME\") | .spec.chart.spec.chart" "$RELEASES_FILE")
+            VERSION=$(yq eval -N -r "select(.metadata.name == \"$NAME\") | .spec.chart.spec.version" "$RELEASES_FILE")
+            SOURCE=$(yq eval -N -r "select(.metadata.name == \"$NAME\") | .spec.chart.spec.sourceRef.name" "$RELEASES_FILE")
 
-            yq eval "select(.metadata.name == \"$NAME\") | .spec.values" "$RELEASES_FILE" > /tmp/values-$NAME.yaml
+            yq eval -N "select(.metadata.name == \"$NAME\") | .spec.values" "$RELEASES_FILE" > /tmp/values-$NAME.yaml
 
             echo "Rendering $NAME ($SOURCE/$CHART @ $VERSION)"
             helm template "$NAME" "$SOURCE/$CHART" \
