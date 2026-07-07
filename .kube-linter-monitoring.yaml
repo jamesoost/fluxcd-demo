@@ -12,3 +12,10 @@ checks:
     - no-rolling-update-strategy
     - default-service-account
     - use-namespace
+    - wildcard-in-rules
+    - sensitive-host-mounts
+    - host-network
+    - host-pid
+    - writable-host-mount
+    - no-liveness-probe
+    - no-readiness-probe
