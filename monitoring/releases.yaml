@@ -20,6 +20,14 @@ spec:
     prometheus:
       service:
         type: ClusterIP
+      prometheusSpec:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
     alertmanager:
       enabled: false
 ---
@@ -44,6 +52,14 @@ spec:
       enabled: false
     promtail:
       enabled: true
+    loki:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -64,5 +80,36 @@ spec:
   values:
     service:
       type: ClusterIP
-    adminUser: admin
-    adminPassword: admin
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 20
+      timeoutSeconds: 5
+      periodSeconds: 15
+      failureThreshold: 6
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      periodSeconds: 20
+      failureThreshold: 3
+    startupProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      failureThreshold: 30
+      periodSeconds: 10
