@@ -38,7 +38,6 @@ jobs:
             -skip SealedSecret \
             -schema-location default \
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
-            -schema-location 'https://raw.githubusercontent.com/fluxcd/crd-schemas/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             /tmp/rendered.yaml
 
       - name: Install kube-linter
@@ -50,3 +49,45 @@ jobs:
       - name: Run kube-linter
         run: |
           kube-linter lint /tmp/rendered.yaml
+
+      - name: Install yq
+        run: |
+          sudo curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+          
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Render Monitoring Stack
+        run: |
+          REPOS_FILE="fluxcd-demo/monitoring/repositories.yaml"
+          RELEASES_FILE="fluxcd-demo/monitoring/releases.yaml"
+
+          REPO_NAMES=$(yq eval 'select(.kind == "HelmRepository") | .metadata.name' "$REPOS_FILE")
+          for REPO in $REPO_NAMES; do
+            URL=$(yq eval "select(.metadata.name == \"$REPO\") | .spec.url" "$REPOS_FILE")
+            helm repo add "$REPO" "$URL"
+          done
+          helm repo update
+
+          rm -f /tmp/helm-rendered.yaml
+          touch /tmp/helm-rendered.yaml
+
+          NAMES=$(yq eval 'select(.kind == "HelmRelease") | .metadata.name' "$RELEASES_FILE")
+          for NAME in $NAMES; do
+            CHART=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.chart" "$RELEASES_FILE")
+            VERSION=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.version" "$RELEASES_FILE")
+            SOURCE=$(yq eval "select(.metadata.name == \"$NAME\") | .spec.chart.spec.sourceRef.name" "$RELEASES_FILE")
+
+            yq eval "select(.metadata.name == \"$NAME\") | .spec.values" "$RELEASES_FILE" > /tmp/values-$NAME.yaml
+
+            echo "Rendering $NAME ($SOURCE/$CHART @ $VERSION)"
+            helm template "$NAME" "$SOURCE/$CHART" \
+              --version "$VERSION" \
+              -f /tmp/values-$NAME.yaml \
+              --namespace monitoring >> /tmp/helm-rendered.yaml
+          done
+
+      - name: Lint monitoring stack
+        run: |
+          kube-linter lint --config .kube-linter-monitoring.yaml /tmp/helm-rendered.yaml
