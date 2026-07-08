@@ -11,31 +11,36 @@ It deploys a sample application and a monitoring stack (Prometheus, Loki, Grafan
 flowchart TD
     A[GitHub Repo] --> B[Flux Source Controller]
     B --> C[Flux Kustomize Controller]
-    C --> D[Apps Namespace]
-    C --> E[Monitoring Namespace]
-    D --> F[whoami Deployment + Service]
-    E --> G[HelmRepository + HelmRelease]
-    G --> H[Prometheus]
-    G --> I[Loki]
-    G --> J[Grafana]
-    J --> K[Ingress via Traefik]
+    C --> D[Cluster Path: clusters/dev or clusters/prod]
+    D --> E[Overlay: overlays/dev or overlays/prod]
+    E --> F[Shared Infrastructure Base]
+    F --> G[Apps Namespace]
+    F --> H[Monitoring Namespace]
+    G --> I[whoami Deployment + Service]
+    H --> J[HelmRepository + HelmRelease]
+    J --> K[Prometheus]
+    J --> L[Loki]
+    J --> M[Grafana]
+    M --> N[Ingress via Traefik]
 ```
 
 ## Repo Structure
 
-- apps/whoami: sample application manifests.
-- monitoring: HelmRepository, HelmRelease, and monitoring resources.
-- ingress: ingress resources (Grafana endpoint).
-- kustomization.yaml: top-level Flux reconciliation entrypoint.
-- namespace.yaml: shared namespace bootstrap.
+- infrastructure: shared manifests (apps, monitoring, ingress).
+- overlays/dev: environment-specific patches for dev.
+- overlays/prod: environment-specific patches for prod.
+- clusters/dev: cluster entrypoint for the dev environment.
+- clusters/prod: cluster entrypoint for the prod environment.
+- kustomization.yaml: default local entrypoint (currently points to dev cluster path).
 
 ## GitOps Workflow
 
 1. Changes are committed to Git.
 2. Flux pulls repository updates.
-3. Kustomize reconciles core manifests.
-4. Flux Helm controller reconciles Helm releases for monitoring.
-5. Cluster state converges to the desired state defined in this repository.
+3. Each cluster reconciles its own path (`clusters/dev` or `clusters/prod`).
+4. Cluster path resolves to an environment overlay.
+5. Overlay applies patches on top of shared infrastructure.
+6. Cluster state converges to the desired state defined in this repository.
 
 ## Components
 
@@ -59,9 +64,21 @@ GitHub Actions validates every pull request and push to main:
 High-level deployment flow:
 
 1. Bootstrap Flux on the cluster.
-2. Point Flux to this repository.
-3. Apply top-level kustomization.
+2. Point Flux to this repository and set the Kustomization path for that cluster.
+3. Use `./clusters/dev` for development or `./clusters/prod` for production.
 4. Verify app, monitoring, and ingress resources reconcile successfully.
+
+## Build Commands
+
+- Build dev cluster manifests:
+    - `kustomize build clusters/dev`
+- Build prod cluster manifests:
+    - `kustomize build clusters/prod`
+
+## Root Kustomization
+
+- `kustomization.yaml` is intentionally a local default and currently targets `clusters/dev`.
+- This is due to VM limitations and only one environment will be deployed at a time.
 
 ## Current Features
 
@@ -72,5 +89,6 @@ High-level deployment flow:
 
 ## Future Improvements
 
-- Add environment overlays (dev/stage/prod style structure).
+- Introduce Vault + External Secrets and migrate away from Sealed Secrets.
+- Add Dagster as a realistic application stack with secrets integration.
 - Add alert routing and dashboard provisioning.

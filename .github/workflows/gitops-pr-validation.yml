@@ -25,8 +25,10 @@ jobs:
 
       - name: Validate kustomize build
         run: |
-          kustomize build . > /tmp/rendered.yaml
-          echo "Rendered manifests to /tmp/rendered.yaml"
+          kustomize build clusters/dev > /tmp/rendered-dev.yaml
+          kustomize build clusters/prod > /tmp/rendered-prod.yaml
+          cat /tmp/rendered-dev.yaml /tmp/rendered-prod.yaml > /tmp/rendered.yaml
+          echo "Rendered manifests for dev and prod to /tmp/rendered.yaml"
 
       - name: Install kubeconform
         run: |
@@ -67,8 +69,8 @@ jobs:
 
       - name: Render Monitoring Stack
         run: |
-          REPOS_FILE="monitoring/repositories.yaml"
-          RELEASES_FILE="monitoring/releases.yaml"
+          REPOS_FILE="infrastructure/monitoring/repositories.yaml"
+          RELEASES_FILE="infrastructure/monitoring/releases.yaml"
 
           REPO_NAMES=$(yq eval -N -r 'select(.kind == "HelmRepository") | .metadata.name' "$REPOS_FILE")
           for REPO in $REPO_NAMES; do
@@ -100,7 +102,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          kube-linter lint --config .kube-linter-monitoring.yaml /tmp/helm-rendered.yaml 2>&1 | tee /tmp/lint-monitoring.txt
+          kube-linter lint --config .github/lint/kube-linter-monitoring.yaml /tmp/helm-rendered.yaml 2>&1 | tee /tmp/lint-monitoring.txt
 
       - name: Summarize lint results
         if: always()
