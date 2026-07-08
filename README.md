@@ -26,7 +26,7 @@ flowchart TD
 
 ## Repo Structure
 
-- infrastructure: shared manifests (apps, monitoring, ingress).
+- infrastructure: shared manifests (apps, secrets platform, monitoring, ingress).
 - overlays/dev: environment-specific patches for dev.
 - overlays/prod: environment-specific patches for prod.
 - clusters/dev: cluster entrypoint for the dev environment.
@@ -48,7 +48,8 @@ flowchart TD
 - Prometheus stack: metrics collection and alerting components.
 - Loki: log aggregation backend.
 - Grafana: dashboards and visualization.
-- Sealed Secrets: encrypted secret management for GitOps workflows.
+- Vault + External Secrets foundation: centralized secret platform components.
+- Sealed Secrets: currently still used for Grafana admin secret until migration phase.
 
 ## CI Pipeline Overview
 
@@ -83,6 +84,7 @@ High-level deployment flow:
 ## Current Features
 
 - GitOps-based app and monitoring deployment.
+- Vault and External Secrets baseline deployed via Flux HelmReleases.
 - Monitoring stack tuned for smaller local environments.
 - CI manifest validation with schema and lint checks.
 - Dedicated monitoring lint profile to reduce low-signal chart findings.
