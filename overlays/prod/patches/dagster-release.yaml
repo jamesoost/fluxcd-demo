@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dagster
+  namespace: dagster
+spec:
+  values:
+    dagsterWebserver:
+      replicaCount: 2
+      resources:
+        requests:
+          cpu: 300m
+          memory: 768Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+    dagsterDaemon:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    dagster-user-deployments:
+      deployments:
+        - name: k8s-example-user-code-1
+          image:
+            repository: docker.io/dagster/user-code-example
+            tag: "1.13.12"
+            pullPolicy: Always
+          dagsterApiGrpcArgs:
+            - "--python-file"
+            - "/example_project/example_repo/repo.py"
+          port: 3030
+          replicaCount: 2
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
