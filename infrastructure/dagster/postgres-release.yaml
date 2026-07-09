@@ -5,10 +5,14 @@ metadata:
   namespace: dagster
 spec:
   interval: 5m
+  install:
+    timeout: 10m
+  upgrade:
+    timeout: 10m
   chart:
     spec:
       chart: postgresql
-      version: "18.7.13"
+      version: "14.x"
       sourceRef:
         kind: HelmRepository
         name: bitnami
