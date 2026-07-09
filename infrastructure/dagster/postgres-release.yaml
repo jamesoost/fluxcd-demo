@@ -36,3 +36,5 @@ spec:
           memory: 512Mi
       persistence:
         size: 2Gi
+      image:
+        tag: "18"
