@@ -46,7 +46,6 @@ jobs:
             -strict \
             -summary \
             -ignore-missing-schemas \
-            -skip SealedSecret \
             -schema-location default \
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             /tmp/rendered-dev.yaml \
