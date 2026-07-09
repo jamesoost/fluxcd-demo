@@ -1,0 +1,381 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Infrastructure / Node",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!~\"POD|\", image!=\"\"}[5m])))",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Pod/Container CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Available % by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\",mountpoint=\"/\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\",mountpoint=\"/\"})",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Root Disk Usage %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "sum by (instance) (rate(node_disk_read_bytes_total[5m]))",
+          "legendFormat": "{{instance}} read",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (instance) (rate(node_disk_written_bytes_total[5m]))",
+          "legendFormat": "{{instance}} write",
+          "refId": "B"
+        }
+      ],
+      "title": "Disk I/O",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum by (instance) (rate(node_network_receive_bytes_total{device!~\"lo\"}[5m]))",
+          "legendFormat": "{{instance}} rx",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (instance) (rate(node_network_transmit_bytes_total{device!~\"lo\"}[5m]))",
+          "legendFormat": "{{instance}} tx",
+          "refId": "B"
+        }
+      ],
+      "title": "Network Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "sum by (instance) (rate(node_network_receive_errs_total{device!~\"lo\"}[5m]) + rate(node_network_transmit_errs_total{device!~\"lo\"}[5m]))",
+          "legendFormat": "{{instance}} errors",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (instance) (rate(node_network_receive_drop_total{device!~\"lo\"}[5m]) + rate(node_network_transmit_drop_total{device!~\"lo\"}[5m]))",
+          "legendFormat": "{{instance}} drops",
+          "refId": "B"
+        }
+      ],
+      "title": "Network Errors and Drops",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dtdurations"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "node_time_seconds - node_boot_time_seconds",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Node Uptime",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{namespace=~\"$namespace\"}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Namespace Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "monitoring",
+    "stack-health"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_pod_info, namespace)",
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": true,
+        "name": "namespace",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "Prometheus-namespace-Variable-Query"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Stack Health",
+  "uid": "stack-health",
+  "version": 4,
+  "weekStart": ""
+}

@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "87.10.1"
+      version: "87.12.1"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -53,6 +53,8 @@ spec:
     promtail:
       enabled: true
     loki:
+      image:
+        tag: "2.9.8"
       resources:
         requests:
           cpu: 100m
@@ -71,7 +73,7 @@ spec:
   chart:
     spec:
       chart: grafana
-      version: "8.5.1"
+      version: "10.5.15"
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -80,6 +82,17 @@ spec:
   values:
     service:
       type: ClusterIP
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: monitoring
+      datasources:
+        enabled: true
+        label: grafana_datasource
+        labelValue: "1"
+        searchNamespace: monitoring
     admin:
       existingSecret: grafana-admin
       userKey: admin-user

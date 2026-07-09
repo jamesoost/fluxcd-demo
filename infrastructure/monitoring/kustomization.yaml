@@ -6,3 +6,20 @@ resources:
   - external-secrets-grafana.yaml
   - repositories.yaml
   - releases.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: grafana-dashboard-stack-health
+    namespace: monitoring
+    files:
+      - dashboards/stack-health.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+  - name: grafana-datasources
+    namespace: monitoring
+    files:
+      - datasources/datasources.yaml
+    options:
+      labels:
+        grafana_datasource: "1"
