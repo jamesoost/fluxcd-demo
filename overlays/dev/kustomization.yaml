@@ -4,5 +4,4 @@ resources:
   - ../../infrastructure
   - ../../infrastructure/monitoring
   - ingress/grafana-ingress.yaml
-patches:
-  - path: apps/whoami/deployment-patch.yaml
+  - ingress/dagster-ingress.yaml

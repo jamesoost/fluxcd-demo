@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dagster
+  namespace: dagster
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dagster.dev.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dagster-dagster-webserver
+                port:
+                  number: 80

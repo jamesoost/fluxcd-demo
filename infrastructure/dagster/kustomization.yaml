@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - repositories.yaml
+  - secretstore.yaml
+  - external-secrets-dagster.yaml
+  - postgres-release.yaml
+  - dagster-release.yaml
