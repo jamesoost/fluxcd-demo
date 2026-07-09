@@ -5,6 +5,10 @@ metadata:
   namespace: dagster
 spec:
   interval: 5m
+  install:
+    timeout: 10m
+  upgrade:
+    timeout: 10m
   dependsOn:
     - name: dagster-postgresql
       namespace: dagster
@@ -23,7 +27,7 @@ spec:
     generatePostgresqlPasswordSecret: false
     postgresql:
       enabled: false
-      postgresqlHost: dagster-postgresql-primary
+      postgresqlHost: dagster-postgresql
       postgresqlUsername: dagster
       postgresqlDatabase: dagster
       service:
@@ -32,11 +36,11 @@ spec:
       replicaCount: 1
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 300m
+          cpu: 200m
           memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
     dagsterDaemon:
       resources:
         requests:
