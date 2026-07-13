@@ -1,6 +1,6 @@
-# FluxCD GitOps Demo
+# A Production-Inspired GitOps Platform
 
-This repo is a small but functional GitOps platform deployment, built as a portfolio project. It demonstrates how to design, operate, and evolve a GitOps platform with clear engineering trade-offs.
+This repository demonstrates a production-inspired GitOps platform built to showcase modern Platform Engineering practices. It focuses on designing, operating, and evolving a Kubernetes platform while documenting the engineering trade-offs behind key architectural decisions.
 
 ## What Is Implemented
 
