@@ -1,6 +1,6 @@
-# A Production-Inspired GitOps Platform
+# GitOps Platform
 
-This repository demonstrates a production-inspired GitOps platform built to showcase modern Platform Engineering practices. It focuses on designing, operating, and evolving a Kubernetes platform while documenting the engineering trade-offs behind key architectural decisions.
+This repository implements a working Kubernetes GitOps platform using FluxCD. It brings together declarative application delivery, runtime secret management, and observability through a platform comprising Dagster, PostgreSQL, Vault, External Secrets, Prometheus, Loki, and Grafana. The implementation is intentionally scoped to a single-node local cluster while preserving production architectural patterns, with the design decisions and production considerations documented throughout the repository.
 
 ## What Is Implemented
 
@@ -57,6 +57,7 @@ Full details: [docs/architecture.md](docs/architecture.md)
 | Vault + External Secrets | Keeps app credentials out of Git entirely while still allowing per-app, policy-scoped access with no single shared credential that could leak broadly | Manual unseal in this demo increases operational overhead |
 | Standalone Grafana | Explicitly disables the embedded Grafana available in both kube-prometheus-stack and loki-stack (`grafana.enabled: false`), running Grafana as its own release allows for full control over datasource and dashboard provisioning | Additional HelmRelease to maintain |
 | CI split: app lint blocking, monitoring lint advisory | Protects the core app deployment path from regressions while still surfacing monitoring chart risks for follow-up, rather than treating all lint findings as equally merge-blocking | Monitoring issues can still merge if not manually addressed |
+
 ## Docs Map
 
 - [Getting Started](docs/getting-started.md): prerequisites, bootstrap, verification, access, teardown.
@@ -69,7 +70,7 @@ Full details: [docs/architecture.md](docs/architecture.md)
 
 ## Current Limitations
 
-- Built and tested as a single-node local demo environmentand tested on a 4 vCPU and 16GB Ram VM running Debian.
+- Built and tested as a single-node local demo environment on a 4 vCPU and 16GB Ram VM running Debian.
 - Vault is single-replica with manual unseal.
 - No long-term metrics or logs retention backend.
 
